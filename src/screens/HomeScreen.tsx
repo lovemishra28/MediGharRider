@@ -98,7 +98,7 @@ const HomeScreen = () => {
             maxZoom: 19,
             attribution: '&copy; <a href="https://carto.com">CartoDB</a> contributors'
           }).addTo(map);
-          L.marker([${currentLat}, ${currentLng}]).addTo(map).bindPopup('🛵 Me').openPopup();
+          L.marker([${currentLat}, ${currentLng}]).addTo(map).bindPopup('My Location').openPopup();
           L.circle([${currentLat}, ${currentLng}], {
             radius: 2000,
             stroke: false,

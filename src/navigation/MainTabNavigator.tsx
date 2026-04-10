@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Home, Package, User } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
 import MyDeliveriesScreen from '../screens/MyDeliveriesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -28,17 +29,17 @@ const MainTabNavigator = () => {
       <Tab.Screen
         name="HomeTab"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Home', tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏠</Text> }}
+        options={{ tabBarLabel: 'Home', tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }}
       />
       <Tab.Screen
         name="DeliveriesTab"
         component={MyDeliveriesScreen}
-        options={{ tabBarLabel: 'Deliveries', tabBarIcon: () => <Text style={{ fontSize: 20 }}>📦</Text> }}
+        options={{ tabBarLabel: 'Deliveries', tabBarIcon: ({ color, size }) => <Package color={color} size={size} /> }}
       />
       <Tab.Screen
         name="ProfileTab"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profile', tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text> }}
+        options={{ tabBarLabel: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
       />
     </Tab.Navigator>
   );

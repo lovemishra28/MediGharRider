@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
+import { Building2 } from 'lucide-react-native';
 
 const OrderCard = ({ order }: { order: any }) => {
   const navigation = useNavigation<any>();
@@ -27,7 +28,7 @@ const OrderCard = ({ order }: { order: any }) => {
     >
       <View style={styles.topRow}>
         <View style={styles.pharmacyBadge}>
-          <Text style={{ fontSize: 16 }}>🏥</Text>
+          <Building2 size={24} color={colors.primary} />
         </View>
         <View style={styles.pharmacyInfo}>
           <Text style={[styles.pharmacyName, { color: colors.text }]} numberOfLines={1}>

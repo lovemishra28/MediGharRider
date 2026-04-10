@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import { Moon, Sun } from 'lucide-react-native';
 
 const ProfileScreen = () => {
   const { colors, isDarkMode, toggleTheme } = useTheme();
@@ -20,9 +21,12 @@ const ProfileScreen = () => {
 
         <View style={[styles.settingsCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
           <View style={styles.settingRow}>
-            <Text style={[styles.settingText, { color: colors.text }]}> 
-              {isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode'}
-            </Text>
+            <View style={styles.settingTextContainer}>
+              {isDarkMode ? <Moon size={20} color={colors.text} /> : <Sun size={20} color={colors.text} />}
+              <Text style={[styles.settingText, { color: colors.text, marginLeft: 10 }]}> 
+                {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+              </Text>
+            </View>
             <Switch
               trackColor={{ false: '#767577', true: colors.primary }}
               thumbColor={'#f4f3f4'}
@@ -48,6 +52,7 @@ const styles = StyleSheet.create({
   phone: { fontSize: 16, marginBottom: 40 },
   settingsCard: { width: '100%', borderRadius: 16, padding: 20, borderWidth: 1 },
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  settingTextContainer: { flexDirection: 'row', alignItems: 'center' },
   settingText: { fontSize: 16, fontWeight: '600' },
 });
 
