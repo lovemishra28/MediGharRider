@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Geolocation from '@react-native-community/geolocation';
-import MapView, { Marker, Circle } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 import OrderCard from '../components/OrderCard';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -79,6 +79,37 @@ const HomeScreen = () => {
   const currentLat = location?.latitude || defaultLat;
   const currentLng = location?.longitude || defaultLng;
 
+  const mapHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <style>
+          html, body, #map { height: 100%; margin: 0; padding: 0; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+          const map = L.map('map').setView([${currentLat}, ${currentLng}], 13);
+          L.tileLayer('${isDarkMode ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png" : "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"}', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://carto.com">CartoDB</a> contributors'
+          }).addTo(map);
+          L.marker([${currentLat}, ${currentLng}]).addTo(map).bindPopup('🛵 Me').openPopup();
+          L.circle([${currentLat}, ${currentLng}], {
+            radius: 2000,
+            stroke: false,
+            fillColor: '${isDarkMode ? 'rgba(45, 136, 255, 0.18)' : 'rgba(45, 136, 255, 0.12)'}',
+            fillOpacity: 0.8,
+          }).addTo(map);
+        </script>
+      </body>
+    </html>
+  `;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.mapContainer}>
@@ -88,29 +119,13 @@ const HomeScreen = () => {
             <Text style={{ color: colors.text, marginTop: 10 }}>Finding your location...</Text>
           </View>
         ) : (
-          <MapView
+          <WebView
             style={styles.map}
-            initialRegion={{
-              latitude: currentLat,
-              longitude: currentLng,
-              latitudeDelta: 0.04,
-              longitudeDelta: 0.04,
-            }}
-            showsUserLocation={false}
-          >
-            <Marker coordinate={{ latitude: currentLat, longitude: currentLng }}>
-              <View style={[styles.markerPin, { backgroundColor: colors.primary }]}>
-                <Text style={styles.markerText}>🛵</Text>
-              </View>
-            </Marker>
-            <Circle
-              center={{ latitude: currentLat, longitude: currentLng }}
-              radius={2000}
-              fillColor={isDarkMode ? 'rgba(45, 136, 255, 0.15)' : 'rgba(45, 136, 255, 0.1)'}
-              strokeColor={colors.primary}
-              strokeWidth={1.5}
-            />
-          </MapView>
+            originWhitelist={['*']}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            source={{ html: mapHtml }}
+          />
         )}
       </View>
 
