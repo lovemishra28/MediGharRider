@@ -1,9 +1,21 @@
-export const colors = {
-  background: '#111111', // Deep black/dark gray for the main background
-  card: '#1C1C1C',       // Slightly lighter for cards and bottom nav
-  text: '#FFFFFF',       // Primary white text
-  textSecondary: '#A0A0A0', // Gray text for subtitles/inactive icons
-  primary: '#2D88FF',    // The bright blue from your active Home tab
-  success: '#34A853',    // Green for 'Accept Order' buttons later
-  border: '#2A2A2A',     // Subtle borders
+export const darkColors = {
+  background: '#111111',
+  card: '#1C1C1C',
+  text: '#FFFFFF',
+  textSecondary: '#A0A0A0',
+  primary: '#2D88FF',
+  success: '#34A853',
+  border: '#2A2A2A',
 };
+
+export const lightColors = {
+  background: '#F8F9FA',
+  card: '#FFFFFF',
+  text: '#1A1A1A',
+  textSecondary: '#6C757D',
+  primary: '#2D88FF',
+  success: '#28A745',
+  border: '#E9ECEF',
+};
+
+export const colors = darkColors;

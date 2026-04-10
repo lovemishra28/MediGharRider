@@ -3,25 +3,28 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   FlatList,
   Platform,
   PermissionsAndroid,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Geolocation from '@react-native-community/geolocation';
-import { colors } from '../theme/colors';
+import MapView, { Marker, Circle } from 'react-native-maps';
 import OrderCard from '../components/OrderCard';
+import { useTheme } from '../theme/ThemeContext';
 
 const MOCK_ORDERS = [
   { id: '1', pharmacy: 'City Health Pharma', dropoff: 'DD Mall Road', distance: '1.2', payout: '45' },
   { id: '2', pharmacy: 'Wellness Meds', dropoff: 'Maharaj Bada', distance: '2.5', payout: '60' },
   { id: '3', pharmacy: 'QuickCare Pharmacy', dropoff: 'City Center', distance: '3.1', payout: '75' },
-  { id: '4', pharmacy: 'LifeLine Chemists', dropoff: 'Morar Cantt', distance: '4.0', payout: '85' },
-  { id: '5', pharmacy: 'CureAll Pharmacy', dropoff: 'Phoolbagh', distance: '5.2', payout: '110' },
 ];
 
+const { height } = Dimensions.get('window');
+
 const HomeScreen = () => {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState<any>(null);
 
@@ -70,35 +73,60 @@ const HomeScreen = () => {
     );
   };
 
+  const defaultLat = 26.2183;
+  const defaultLng = 78.1828;
+
+  const currentLat = location?.latitude || defaultLat;
+  const currentLng = location?.longitude || defaultLng;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.locationLabel}>Current Location</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.mapContainer}>
         {loading ? (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={styles.loadingText}> Locating...</Text>
+          <View style={[styles.loadingOverlay, { backgroundColor: colors.background }]}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={{ color: colors.text, marginTop: 10 }}>Finding your location...</Text>
           </View>
         ) : (
-          <Text style={styles.locationValue}>
-            📍 Gwalior, Madhya Pradesh
-          </Text>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: currentLat,
+              longitude: currentLng,
+              latitudeDelta: 0.04,
+              longitudeDelta: 0.04,
+            }}
+            showsUserLocation={false}
+          >
+            <Marker coordinate={{ latitude: currentLat, longitude: currentLng }}>
+              <View style={[styles.markerPin, { backgroundColor: colors.primary }]}>
+                <Text style={styles.markerText}>🛵</Text>
+              </View>
+            </Marker>
+            <Circle
+              center={{ latitude: currentLat, longitude: currentLng }}
+              radius={2000}
+              fillColor={isDarkMode ? 'rgba(45, 136, 255, 0.15)' : 'rgba(45, 136, 255, 0.1)'}
+              strokeColor={colors.primary}
+              strokeWidth={1.5}
+            />
+          </MapView>
         )}
       </View>
 
-      <View style={styles.listContainer}>
-        <Text style={styles.sectionTitle}>Nearby Orders ({MOCK_ORDERS.length})</Text>
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
-        ) : (
-          <FlatList
-            data={MOCK_ORDERS}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <OrderCard order={item} />}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+      <View style={[styles.listContainer, { backgroundColor: colors.background }]}> 
+        <View style={styles.listHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Nearby Orders</Text>
+          <Text style={[styles.orderCount, { backgroundColor: colors.card, color: colors.primary }]}> {MOCK_ORDERS.length} </Text>
+        </View>
+
+        <FlatList
+          data={MOCK_ORDERS}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <OrderCard order={item} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     </SafeAreaView>
   );
@@ -107,46 +135,63 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  mapContainer: {
+    height: height * 0.4,
+    width: '100%',
   },
-  locationLabel: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
+  map: {
+    ...StyleSheet.absoluteFill,
   },
-  locationValue: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  loadingRow: {
-    flexDirection: 'row',
+  loadingOverlay: {
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    color: colors.primary,
-    fontSize: 16,
-    marginLeft: 8,
+  markerPin: {
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  markerText: {
+    fontSize: 18,
   },
   listContainer: {
     flex: 1,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -20,
     paddingHorizontal: 20,
-    paddingTop: 15,
+    paddingTop: 24,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
   },
   sectionTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  orderCount: {
+    marginLeft: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontSize: 14,
+    fontWeight: 'bold',
+    overflow: 'hidden',
   },
   listContent: {
     paddingBottom: 20,

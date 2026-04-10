@@ -1,28 +1,51 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 const OrderCard = ({ order }: { order: any }) => {
   const navigation = useNavigation<any>();
+  const { colors, isDarkMode } = useTheme();
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: isDarkMode ? colors.border : 'transparent',
+          borderWidth: isDarkMode ? 1 : 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDarkMode ? 0 : 0.05,
+          shadowRadius: 8,
+          elevation: isDarkMode ? 0 : 3,
+        },
+      ]}
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('OrderDetails', { order })}
+      onPress={() => navigation.navigate('OrderDetails', { order: order })}
     >
       <View style={styles.topRow}>
-        <Text style={styles.pharmacyName}>{order.pharmacy}</Text>
-        <Text style={styles.distance}>{order.distance} km</Text>
+        <View style={styles.pharmacyBadge}>
+          <Text style={{ fontSize: 16 }}>🏥</Text>
+        </View>
+        <View style={styles.pharmacyInfo}>
+          <Text style={[styles.pharmacyName, { color: colors.text }]} numberOfLines={1}>
+            {order.pharmacy}
+          </Text>
+          <Text style={[styles.dropoff, { color: colors.textSecondary }]}>Dropoff: {order.dropoff}</Text>
+        </View>
+        <Text style={[styles.distance, { color: colors.primary }]}>{order.distance} km</Text>
       </View>
 
-      <Text style={styles.dropoff}>To: {order.dropoff}</Text>
+      <View style={[styles.bottomRow, { borderTopColor: colors.border }]}> 
+        <View>
+          <Text style={[styles.payoutLabel, { color: colors.textSecondary }]}>Est. Payout</Text>
+          <Text style={[styles.payout, { color: colors.success }]}>₹{order.payout}</Text>
+        </View>
 
-      <View style={styles.bottomRow}>
-        <Text style={styles.payout}>₹{order.payout}</Text>
-        <View style={styles.acceptBadge}>
-          <Text style={styles.acceptText}>View & Accept</Text>
+        <View style={[styles.acceptBadge, { backgroundColor: colors.primary }]}> 
+          <Text style={styles.acceptText}>Review Order</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -31,52 +54,59 @@ const OrderCard = ({ order }: { order: any }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginBottom: 16,
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
+  },
+  pharmacyBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(45, 136, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  pharmacyInfo: {
+    flex: 1,
+    marginRight: 10,
   },
   pharmacyName: {
-    color: colors.text,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   distance: {
-    color: colors.primary,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   dropoff: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginBottom: 16,
+    fontSize: 13,
   },
   bottomRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     borderTopWidth: 1,
-    borderTopColor: colors.border,
     paddingTop: 12,
   },
+  payoutLabel: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
   payout: {
-    color: colors.success,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   acceptBadge: {
-    backgroundColor: colors.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
   acceptText: {
     color: '#FFF',
