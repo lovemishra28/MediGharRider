@@ -1,0 +1,4 @@
+﻿src/screens/HomeScreen.tsx(289,24): error TS2551: Property 'absoluteFillObject' does not exist on type 'typeof StyleSheet'. Did you mean 'absoluteFill'?
+src/screens/HomeScreen.tsx(291,19): error TS2551: Property 'absoluteFillObject' does not exist on type 'typeof StyleSheet'. Did you mean 'absoluteFill'?
+src/services/storage.ts(20,22): error TS2339: Property 'multiSet' does not exist on type 'AsyncStorage'.
+src/services/storage.ts(27,22): error TS2339: Property 'multiRemove' does not exist on type 'AsyncStorage'.

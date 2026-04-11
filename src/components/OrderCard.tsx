@@ -8,6 +8,13 @@ const OrderCard = ({ order }: { order: any }) => {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useTheme();
 
+  // Support both API fields and legacy mock fields
+  const pharmacy = order.pharmacyName || order.pharmacy;
+  const dropoff = order.dropoffAddress || order.dropoff;
+  const payout = order.totalPayout || order.payout;
+  const distance = order.distance;
+  const id = order._id || order.id;
+
   return (
     <TouchableOpacity
       style={[
@@ -24,7 +31,7 @@ const OrderCard = ({ order }: { order: any }) => {
         },
       ]}
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('OrderDetails', { order: order })}
+      onPress={() => navigation.navigate('OrderDetails', { order })}
     >
       <View style={styles.topRow}>
         <View style={styles.pharmacyBadge}>
@@ -32,20 +39,20 @@ const OrderCard = ({ order }: { order: any }) => {
         </View>
         <View style={styles.pharmacyInfo}>
           <Text style={[styles.pharmacyName, { color: colors.text }]} numberOfLines={1}>
-            {order.pharmacy}
+            {pharmacy}
           </Text>
-          <Text style={[styles.dropoff, { color: colors.textSecondary }]}>Dropoff: {order.dropoff}</Text>
+          <Text style={[styles.dropoff, { color: colors.textSecondary }]}>Dropoff: {dropoff}</Text>
         </View>
-        <Text style={[styles.distance, { color: colors.primary }]}>{order.distance} km</Text>
+        <Text style={[styles.distance, { color: colors.primary }]}>{distance} km</Text>
       </View>
 
-      <View style={[styles.bottomRow, { borderTopColor: colors.border }]}> 
+      <View style={[styles.bottomRow, { borderTopColor: colors.border }]}>
         <View>
           <Text style={[styles.payoutLabel, { color: colors.textSecondary }]}>Est. Payout</Text>
-          <Text style={[styles.payout, { color: colors.success }]}>₹{order.payout}</Text>
+          <Text style={[styles.payout, { color: colors.success }]}>₹{payout}</Text>
         </View>
 
-        <View style={[styles.acceptBadge, { backgroundColor: colors.primary }]}> 
+        <View style={[styles.acceptBadge, { backgroundColor: colors.primary }]}>
           <Text style={styles.acceptText}>Review Order</Text>
         </View>
       </View>

@@ -1,15 +1,17 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, Package, User } from 'lucide-react-native';
+import { Home, Package, User, Wallet } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
 import MyDeliveriesScreen from '../screens/MyDeliveriesScreen';
+import WalletScreen from '../screens/WalletScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
+  const { colors } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -35,6 +37,11 @@ const MainTabNavigator = () => {
         name="DeliveriesTab"
         component={MyDeliveriesScreen}
         options={{ tabBarLabel: 'Deliveries', tabBarIcon: ({ color, size }) => <Package color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="WalletTab"
+        component={WalletScreen}
+        options={{ tabBarLabel: 'Wallet', tabBarIcon: ({ color, size }) => <Wallet color={color} size={size} /> }}
       />
       <Tab.Screen
         name="ProfileTab"
