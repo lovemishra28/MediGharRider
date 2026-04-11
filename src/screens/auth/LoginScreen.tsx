@@ -9,19 +9,41 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/ThemeContext';
-import { Smartphone, Lock } from 'lucide-react-native';
+import { Smartphone, Lock, Settings } from 'lucide-react-native';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { getCustomServerIp, setCustomServerIp } from '../../services/storage';
 
 const LoginScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [serverIp, setServerIp] = useState('');
   const loginFn = useAuthStore((state) => state.login);
+
+  // Load custom IP on mount
+  React.useEffect(() => {
+    getCustomServerIp().then((ip) => {
+      if (ip) setServerIp(ip);
+    });
+  }, []);
+
+  const handleSaveIp = async () => {
+    if (serverIp) {
+      await setCustomServerIp(serverIp);
+      Alert.alert('Success', 'Server IP saved successfully. App will now connect to this proxy/server.');
+    } else {
+      await setCustomServerIp('');
+      Alert.alert('Success', 'Reset to default server IP.');
+    }
+    setShowSettings(false);
+  };
 
   const handleLogin = async () => {
     const cleaned = phone.replace(/\s/g, '');
@@ -58,6 +80,12 @@ const LoginScreen = ({ navigation }: any) => {
       >
         {/* Header */}
         <View style={styles.headerSection}>
+          <TouchableOpacity 
+            style={[styles.settingsButton, { backgroundColor: colors.card }]}
+            onPress={() => setShowSettings(true)}
+          >
+            <Settings size={24} color={colors.primary} />
+          </TouchableOpacity>
           <View style={[styles.iconCircle, { backgroundColor: colors.primary + '20' }]}>
             <Smartphone size={40} color={colors.primary} />
           </View>
@@ -126,6 +154,49 @@ const LoginScreen = ({ navigation }: any) => {
         <Text style={[styles.footer, { color: colors.textSecondary }]}>
           By continuing, you agree to our Terms of Service
         </Text>
+
+        {/* Server IP Modal */}
+        <Modal
+          visible={showSettings}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowSettings(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Configure Server IP</Text>
+              <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                Enter the local IP address printed in the backend terminal (e.g. 192.168.1.5)
+              </Text>
+              
+              <TextInput
+                style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+                placeholder="192.168.x.x"
+                placeholderTextColor={colors.textSecondary}
+                value={serverIp}
+                onChangeText={setServerIp}
+                keyboardType="numbers-and-punctuation"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalBtn, { backgroundColor: colors.border }]}
+                  onPress={() => setShowSettings(false)}
+                >
+                  <Text style={{ color: colors.text, fontWeight: 'bold' }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalBtn, { backgroundColor: colors.primary }]}
+                  onPress={handleSaveIp}
+                >
+                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -134,7 +205,19 @@ const LoginScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   keyboardView: { flex: 1, paddingHorizontal: 24, justifyContent: 'center' },
-  headerSection: { alignItems: 'center', marginBottom: 40 },
+  headerSection: { alignItems: 'center', marginBottom: 40, position: 'relative' },
+  settingsButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: 10,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
   iconCircle: {
     width: 80,
     height: 80,
@@ -184,6 +267,39 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
   footer: { fontSize: 12, textAlign: 'center', marginTop: 8 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  modalSubtitle: { fontSize: 14, textAlign: 'center', marginBottom: 20 },
+  modalInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 50,
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  modalButtons: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
+  modalBtn: {
+    flex: 1,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    marginHorizontal: 8,
+  },
 });
 
 export default LoginScreen;

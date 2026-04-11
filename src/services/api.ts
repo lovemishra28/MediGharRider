@@ -1,21 +1,28 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, getBaseUrl } from '../config/api';
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from './storage';
 
 // ─── Axios Instance ──────────────────────────────────────
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL, // Starts with default
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// ─── Request Interceptor: Attach JWT ─────────────────────
+// ─── Request Interceptor: Attach JWT and Dynamic IP ──────
 
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    // 1. Get Dynamic IP
+    const currentBaseUrl = await getBaseUrl();
+    if (config.baseURL !== currentBaseUrl) {
+      config.baseURL = currentBaseUrl;
+    }
+
+    // 2. Attach JWT
     const token = await getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -80,7 +87,8 @@ api.interceptors.response.use(
         throw new Error('No refresh token');
       }
 
-      const { data } = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+      const currentBaseUrl = await getBaseUrl();
+      const { data } = await axios.post(`${currentBaseUrl}/auth/refresh-token`, {
         refreshToken,
       });
 

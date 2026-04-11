@@ -1,16 +1,18 @@
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL } from '../config/api';
+import { SOCKET_URL, getSocketUrl } from '../config/api';
 
 let socket: Socket | null = null;
 
 // ─── Connection ──────────────────────────────────────────
 
-export const connectSocket = (token: string): Socket => {
+export const connectSocket = async (token: string): Promise<Socket | null> => {
   if (socket?.connected) {
     return socket;
   }
 
-  socket = io(SOCKET_URL, {
+  const url = await getSocketUrl();
+
+  socket = io(url, {
     auth: { token },
     transports: ['websocket'],
     reconnection: true,

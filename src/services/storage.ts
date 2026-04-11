@@ -4,6 +4,17 @@ const KEYS = {
   ACCESS_TOKEN: '@medighar_access_token',
   REFRESH_TOKEN: '@medighar_refresh_token',
   RIDER: '@medighar_rider',
+  CUSTOM_SERVER_IP: '@medighar_custom_server_ip',
+};
+
+// ─── Server IP Management ────────────────────────────────
+
+export const getCustomServerIp = async (): Promise<string | null> => {
+  return AsyncStorage.getItem(KEYS.CUSTOM_SERVER_IP);
+};
+
+export const setCustomServerIp = async (ip: string): Promise<void> => {
+  await AsyncStorage.setItem(KEYS.CUSTOM_SERVER_IP, ip);
 };
 
 // ─── Token Management ────────────────────────────────────
