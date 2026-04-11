@@ -7,8 +7,10 @@ const DEFAULT_PORT = 5000;
 
 export const getBaseUrl = async () => {
   try {
-    const customIp = await getCustomServerIp();
+    let customIp = await getCustomServerIp();
     if (customIp) {
+      // Clean up IP if user accidentally entered http or ports
+      customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
       return `http://${customIp}:${DEFAULT_PORT}/api`;
     }
   } catch (error) {
@@ -19,8 +21,9 @@ export const getBaseUrl = async () => {
 
 export const getSocketUrl = async () => {
   try {
-    const customIp = await getCustomServerIp();
+    let customIp = await getCustomServerIp();
     if (customIp) {
+      customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
       return `http://${customIp}:${DEFAULT_PORT}`;
     }
   } catch (error) {
