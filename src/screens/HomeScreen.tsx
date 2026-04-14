@@ -32,6 +32,7 @@ const HomeScreen = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [fetchingOrders, setFetchingOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
 
   useEffect(() => {
     requestLocationPermission();
@@ -107,6 +108,7 @@ const HomeScreen = () => {
   // Fetch nearby orders from API
   const fetchNearbyOrders = useCallback(async (lat: number, lng: number) => {
     setFetchingOrders(true);
+    setOrdersError(null);
     try {
       const { data } = await api.get('/orders/nearby', {
         params: { lat, lng, radius: 5000 },
@@ -114,6 +116,8 @@ const HomeScreen = () => {
       setOrders(data.data.orders || []);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      setOrders([]);
+      setOrdersError('Could not load nearby orders. Check internet/server and pull to refresh.');
     } finally {
       setFetchingOrders(false);
     }
@@ -134,6 +138,7 @@ const HomeScreen = () => {
     } else {
       goOffline();
       setOrders([]);
+      setOrdersError(null);
     }
   };
 
@@ -318,6 +323,9 @@ const HomeScreen = () => {
           )}
           {fetchingOrders && <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 8 }} />}
         </View>
+        {ordersError ? (
+          <Text style={[styles.fetchErrorText, { color: '#EA4335' }]}>{ordersError}</Text>
+        ) : null}
 
         {isOnline ? (
           <FlatList

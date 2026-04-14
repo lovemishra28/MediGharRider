@@ -5,6 +5,11 @@ import { getCustomServerIp } from '../services/storage';
 const PRODUCTION_URL = 'https://medigharrider-api.onrender.com';
 
 export const getBaseUrl = async () => {
+  // In release APK, always use deployed server to avoid stale local IP issues.
+  if (!__DEV__) {
+    return `${PRODUCTION_URL}/api`;
+  }
+
   try {
     let customIp = await getCustomServerIp();
     if (customIp) {
@@ -19,6 +24,11 @@ export const getBaseUrl = async () => {
 };
 
 export const getSocketUrl = async () => {
+  // In release APK, always use deployed server to avoid stale local IP issues.
+  if (!__DEV__) {
+    return PRODUCTION_URL;
+  }
+
   try {
     let customIp = await getCustomServerIp();
     if (customIp) {
