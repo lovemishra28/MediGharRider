@@ -1,22 +1,21 @@
 import { getCustomServerIp } from '../services/storage';
 
 // ─── API Configuration ───────────────────────────────────
-// Default Fallback IP
-const DEFAULT_DEV_HOST = '10.0.2.2';
-const DEFAULT_PORT = 5000;
+// ⚠️ PASTE YOUR RENDER URL SECURELY HERE (Do not add a slash '/' at the end)
+const PRODUCTION_URL = 'https://medigharrider-api.onrender.com';
 
 export const getBaseUrl = async () => {
   try {
     let customIp = await getCustomServerIp();
     if (customIp) {
-      // Clean up IP if user accidentally entered http or ports
       customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
-      return `http://${customIp}:${DEFAULT_PORT}/api`;
+      return `http://${customIp}:5000/api`;
     }
   } catch (error) {
     // Ignore error
   }
-  return `http://${DEFAULT_DEV_HOST}:${DEFAULT_PORT}/api`;
+
+  return `${PRODUCTION_URL}/api`;
 };
 
 export const getSocketUrl = async () => {
@@ -24,14 +23,11 @@ export const getSocketUrl = async () => {
     let customIp = await getCustomServerIp();
     if (customIp) {
       customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
-      return `http://${customIp}:${DEFAULT_PORT}`;
+      return `http://${customIp}:5000`;
     }
   } catch (error) {
     // Ignore error
   }
-  return `http://${DEFAULT_DEV_HOST}:${DEFAULT_PORT}`;
-};
 
-// Static export kept for backward compatibility (will use default initially, but dynamic calls use getBaseUrl)
-export const API_BASE_URL = `http://${DEFAULT_DEV_HOST}:${DEFAULT_PORT}/api`;
-export const SOCKET_URL = `http://${DEFAULT_DEV_HOST}:${DEFAULT_PORT}`;
+  return PRODUCTION_URL;
+};
