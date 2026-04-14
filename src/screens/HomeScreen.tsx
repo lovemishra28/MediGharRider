@@ -87,7 +87,13 @@ const HomeScreen = () => {
   const getCurrentLocation = () => {
     Geolocation.getCurrentPosition(
       (position) => {
-        setLocation(position.coords);
+        let { latitude, longitude } = position.coords;
+        // Override US coordinates (from Android emulator) to Gwalior, India for testing
+        if (longitude < -50) {
+          latitude = 26.2183;
+          longitude = 78.1828;
+        }
+        setLocation({ ...position.coords, latitude, longitude });
         setLoading(false);
       },
       (error) => {
@@ -147,8 +153,8 @@ const HomeScreen = () => {
   const orderMarkers = orders.map((o) => {
     const [lng, lat] = o.pickupLocation?.coordinates || [0, 0];
     return `L.marker([${lat}, ${lng}], {
-      icon: L.divIcon({ className: '', html: '<div class="blinking-dot" style="background:#EA4335;color:#fff;padding:6px;border-radius:12px;font-size:12px;font-weight:bold;white-space:nowrap;box-shadow:0 0 10px #EA4335;">⚕️ ₹${o.totalPayout}</div>' })
-    }).addTo(map).bindPopup('<b>${(o.pharmacyName || '').replace(/'/g, '')}</b><br/>Distance: ${o.distance}km');`;
+      icon: L.divIcon({ className: '', html: '<div class="glowing-circle"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
+    }).addTo(map).bindPopup('<b>${(o.pharmacyName || '').replace(/'/g, '')}</b><br/>Payout: ₹${o.totalPayout}<br/>Distance: ${o.distance}km');`;
   }).join('\n');
 
   const mapHtml = `
@@ -161,16 +167,19 @@ const HomeScreen = () => {
           html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background-color: transparent; }
           .leaflet-control-attribution { display: none !important; }
           
-          /* Blinking animation for orders */
-          @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+          /* Glowing animation for orders */
+          @keyframes glow {
+            0% { box-shadow: 0 0 5px 0px rgba(234, 67, 53, 0.4); transform: scale(0.9); }
+            50% { box-shadow: 0 0 15px 5px rgba(234, 67, 53, 0.8); transform: scale(1.1); }
+            100% { box-shadow: 0 0 5px 0px rgba(234, 67, 53, 0.4); transform: scale(0.9); }
           }
-          .blinking-dot {
-            animation: pulse 1.5s infinite;
-            display: inline-block;
-            text-align: center;
+          .glowing-circle {
+            width: 14px;
+            height: 14px;
+            background-color: #EA4335;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: glow 1.5s ease-in-out infinite;
           }
 
           .slider-wrapper {

@@ -8,6 +8,7 @@ import OrderDetailsScreen from './src/screens/OrderDetailsScreen';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useAuthStore } from './src/store/authStore';
 import { connectSocket } from './src/services/socket';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,9 +74,11 @@ const AppNavigation = () => {
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <AppNavigation />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppNavigation />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 
