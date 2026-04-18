@@ -13,7 +13,7 @@ const OrderCard = ({ order }: { order: any }) => {
   const dropoff = order.dropoffAddress || order.dropoff;
   const payout = order.totalPayout || order.payout;
   const distance = order.distance;
-  const id = order._id || order.id;
+  const id = order.id;
 
   return (
     <TouchableOpacity

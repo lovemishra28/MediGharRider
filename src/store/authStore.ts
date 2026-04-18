@@ -9,7 +9,7 @@ import {
 } from '../services/storage';
 
 export interface Rider {
-  _id: string;
+  id: string;
   phone: string;
   name: string;
   email?: string;

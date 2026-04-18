@@ -13,14 +13,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/ThemeContext';
-import { Smartphone, Lock, Settings } from 'lucide-react-native';
+import { Smartphone, Lock, Settings, Mail } from 'lucide-react-native';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { getCustomServerIp, setCustomServerIp } from '../../services/storage';
 
 const LoginScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
+  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -46,27 +48,57 @@ const LoginScreen = ({ navigation }: any) => {
   };
 
   const handleLogin = async () => {
-    const cleaned = phone.replace(/\s/g, '');
-    if (cleaned.length !== 10) {
-      Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
-      return;
+    let payload: any = { password, method: loginMethod };
+    
+    if (loginMethod === 'phone') {
+      const cleaned = phone.replace(/\s/g, '');
+      if (cleaned.length !== 10) {
+        Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
+        return;
+      }
+      payload.phone = `+91${cleaned}`;
+    } else {
+      if (!email || !email.includes('@')) {
+        Alert.alert('Invalid Email', 'Please enter a valid email address.');
+        return;
+      }
+      payload.email = email.toLowerCase().trim();
     }
+
     if (!password) {
       Alert.alert('Password Required', 'Please enter your password.');
       return;
     }
 
-    const fullPhone = `+91${cleaned}`;
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/send-otp', { phone: fullPhone, password });
+      const response = await api.post('/auth/send-otp', payload);
       const { accessToken, refreshToken, rider } = response.data.data;
       await loginFn(accessToken, refreshToken, rider);
       // Navigation will be handled automatically by the root navigator based on auth state
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Failed to login. Try again.';
-      Alert.alert('Error', msg);
+      
+      if (loginMethod === 'phone') {
+        // Automatically prompt to use email if phone fails
+        Alert.alert(
+          'Verification Failed',
+          `${msg}\n\nWould you like to try verifying with your email address instead?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Use Email', 
+              onPress: () => {
+                setLoginMethod('email');
+                setPassword(''); // Clear password for security
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -87,33 +119,74 @@ const LoginScreen = ({ navigation }: any) => {
             <Settings size={24} color={colors.primary} />
           </TouchableOpacity>
           <View style={[styles.iconCircle, { backgroundColor: colors.primary + '20' }]}>
-            <Smartphone size={40} color={colors.primary} />
+            {loginMethod === 'phone' ? (
+              <Smartphone size={40} color={colors.primary} />
+            ) : (
+              <Mail size={40} color={colors.primary} />
+            )}
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Welcome, Rider!</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Enter your phone number and password to login
+            Enter your {loginMethod === 'phone' ? 'phone number' : 'email'} and password to login
           </Text>
         </View>
 
-        {/* Phone Input */}
-        <View style={styles.inputSection}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
-          <View style={[styles.inputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.countryCode, { borderRightColor: colors.border }]}>
-              <Text style={[styles.countryText, { color: colors.text }]}>🇮🇳 +91</Text>
-            </View>
-            <TextInput
-              style={[styles.phoneInput, { color: colors.text }]}
-              placeholder="12345 67890"
-              placeholderTextColor={colors.textSecondary + '80'}
-              keyboardType="phone-pad"
-              maxLength={12}
-              value={phone}
-              onChangeText={setPhone}
-              autoFocus
-            />
-          </View>
+        {/* Tab Switcher */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, loginMethod === 'phone' && styles.activeTab, loginMethod === 'phone' && { borderBottomColor: colors.primary }]}
+            onPress={() => setLoginMethod('phone')}
+          >
+            <Text style={[styles.tabText, loginMethod === 'phone' ? { color: colors.primary, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Mobile Number</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, loginMethod === 'email' && styles.activeTab, loginMethod === 'email' && { borderBottomColor: colors.primary }]}
+            onPress={() => setLoginMethod('email')}
+          >
+            <Text style={[styles.tabText, loginMethod === 'email' ? { color: colors.primary, fontWeight: 'bold' } : { color: colors.textSecondary }]}>Email ID</Text>
+          </TouchableOpacity>
         </View>
+
+        {/* Input */}
+        {loginMethod === 'phone' ? (
+          <View style={styles.inputSection}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
+            <View style={[styles.inputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.countryCode, { borderRightColor: colors.border }]}>
+                <Text style={[styles.countryText, { color: colors.text }]}>🇮🇳 +91</Text>
+              </View>
+              <TextInput
+                style={[styles.phoneInput, { color: colors.text }]}
+                placeholder="12345 67890"
+                placeholderTextColor={colors.textSecondary + '80'}
+                keyboardType="phone-pad"
+                maxLength={12}
+                value={phone}
+                onChangeText={setPhone}
+                autoFocus={loginMethod === 'phone'}
+              />
+            </View>
+          </View>
+        ) : (
+          <View style={styles.inputSection}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Email ID</Text>
+            <View style={[styles.inputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.passwordIconWrap, { borderRightColor: colors.border }]}>
+                <Mail size={20} color={colors.textSecondary} />
+              </View>
+              <TextInput
+                style={[styles.phoneInput, { color: colors.text }]}
+                placeholder="rider@example.com"
+                placeholderTextColor={colors.textSecondary + '80'}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                autoFocus={loginMethod === 'email'}
+              />
+            </View>
+          </View>
+        )}
 
         {/* Password Input */}
         <View style={styles.inputSection}>
@@ -137,10 +210,17 @@ const LoginScreen = ({ navigation }: any) => {
         <TouchableOpacity
           style={[
             styles.button,
-            { backgroundColor: phone.replace(/\s/g, '').length === 10 && password.length > 0 ? colors.primary : colors.border },
+            { 
+              backgroundColor: 
+                (loginMethod === 'phone' && phone.replace(/\s/g, '').length === 10 && password.length > 0) ||
+                (loginMethod === 'email' && email.includes('@') && password.length > 0)
+                  ? colors.primary : colors.border 
+            },
           ]}
           onPress={handleLogin}
-          disabled={loading || phone.replace(/\s/g, '').length !== 10 || password.length === 0}
+          disabled={loading || 
+            (loginMethod === 'phone' && (phone.replace(/\s/g, '').length !== 10 || password.length === 0)) ||
+            (loginMethod === 'email' && (!email.includes('@') || password.length === 0))}
           activeOpacity={0.85}
         >
           {loading ? (
@@ -228,6 +308,24 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 16, textAlign: 'center', lineHeight: 22 },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+  },
+  tabText: {
+    fontSize: 16,
+  },
   inputSection: { marginBottom: 24 },
   label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginLeft: 4 },
   inputRow: {

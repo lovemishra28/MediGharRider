@@ -18,7 +18,7 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
   const distance = order.distance;
   const estimatedTime = order.estimatedTime;
   const items = order.items || [];
-  const orderId = order._id || order.id;
+  const orderId = order.id;
 
   const handleAcceptOrder = async () => {
     setLoading(true);

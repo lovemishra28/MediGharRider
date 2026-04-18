@@ -84,7 +84,7 @@ const MyDeliveriesScreen = () => {
 
     setUpdating(true);
     try {
-      const { data } = await api.patch(`/orders/${activeOrder._id}/status`, {
+      const { data } = await api.patch(`/orders/${activeOrder.id}/status`, {
         status: nextStatus,
       });
       setActiveOrder(data.data.order);
@@ -103,7 +103,7 @@ const MyDeliveriesScreen = () => {
 
     setUpdating(true);
     try {
-      await api.post(`/orders/${activeOrder._id}/verify-delivery`, {
+      await api.post(`/orders/${activeOrder.id}/verify-delivery`, {
         otp: deliveryOtp,
       });
       Alert.alert('🎉 Delivery Complete!', 'Earnings have been credited to your wallet.');
@@ -128,7 +128,7 @@ const MyDeliveriesScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.patch(`/orders/${activeOrder._id}/status`, {
+              await api.patch(`/orders/${activeOrder.id}/status`, {
                 status: 'cancelled',
                 cancellationReason: 'Cancelled by rider',
               });
@@ -164,7 +164,7 @@ const MyDeliveriesScreen = () => {
 
       <FlatList
         data={history}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }

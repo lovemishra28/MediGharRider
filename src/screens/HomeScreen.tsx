@@ -43,13 +43,13 @@ const HomeScreen = () => {
     const unsubNew = onNewOrder((data: any) => {
       setOrders((prev) => {
         // Prevent duplicates
-        if (prev.find((o) => o._id === data.order._id)) return prev;
+        if (prev.find((o) => o.id === data.order.id)) return prev;
         return [data.order, ...prev];
       });
     });
 
     const unsubAccepted = onOrderAccepted((data: any) => {
-      setOrders((prev) => prev.filter((o) => o._id !== data.orderId));
+      setOrders((prev) => prev.filter((o) => o.id !== data.orderId));
     });
 
     return () => {
@@ -330,7 +330,7 @@ const HomeScreen = () => {
         {isOnline ? (
           <FlatList
             data={orders}
-            keyExtractor={(item) => item._id || item.id}
+            keyExtractor={(item) => item.id || item.id}
             renderItem={({ item }) => <OrderCard order={item} />}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
