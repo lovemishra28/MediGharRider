@@ -33,7 +33,7 @@ const NEXT_STATUS: Record<string, string> = {
 };
 
 const MyDeliveriesScreen = () => {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +89,7 @@ const MyDeliveriesScreen = () => {
       });
       setActiveOrder(data.data.order);
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to update status.');
+      setTimeout(() => Alert.alert('Error', error.response?.data?.message || 'Failed to update status.'), 100);
     } finally {
       setUpdating(false);
     }
@@ -97,7 +97,7 @@ const MyDeliveriesScreen = () => {
 
   const handleVerifyDelivery = async () => {
     if (deliveryOtp.length !== 4) {
-      Alert.alert('Invalid', 'Please enter the 4-digit delivery OTP.');
+      setTimeout(() => Alert.alert('Invalid', 'Please enter the 4-digit delivery OTP.'), 100);
       return;
     }
 
@@ -106,40 +106,42 @@ const MyDeliveriesScreen = () => {
       await api.post(`/orders/${activeOrder.id}/verify-delivery`, {
         otp: deliveryOtp,
       });
-      Alert.alert('🎉 Delivery Complete!', 'Earnings have been credited to your wallet.');
+      setTimeout(() => Alert.alert('🎉 Delivery Complete!', 'Earnings have been credited to your wallet.'), 100);
       setShowOtpModal(false);
       setDeliveryOtp('');
       fetchData(); // Refresh to move order to history
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Invalid OTP. Try again.');
+      setTimeout(() => Alert.alert('Error', error.response?.data?.message || 'Invalid OTP. Try again.'), 100);
     } finally {
       setUpdating(false);
     }
   };
 
   const handleCancelOrder = () => {
-    Alert.alert(
-      'Cancel Delivery?',
-      'Are you sure you want to cancel this delivery?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.patch(`/orders/${activeOrder.id}/status`, {
-                status: 'cancelled',
-                cancellationReason: 'Cancelled by rider',
-              });
-              fetchData();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.message || 'Cancel failed.');
-            }
+    setTimeout(() => {
+      Alert.alert(
+        'Cancel Delivery?',
+        'Are you sure you want to cancel this delivery?',
+        [
+          { text: 'No', style: 'cancel' },
+          {
+            text: 'Yes, Cancel',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await api.patch(`/orders/${activeOrder.id}/status`, {
+                  status: 'cancelled',
+                  cancellationReason: 'Cancelled by rider',
+                });
+                fetchData();
+              } catch (error: any) {
+                setTimeout(() => Alert.alert('Error', error.response?.data?.message || 'Cancel failed.'), 100);
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }, 100);
   };
 
   const getCurrentStepIndex = () => {
@@ -150,7 +152,7 @@ const MyDeliveriesScreen = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.text} />
         </View>
       </SafeAreaView>
     );
@@ -166,7 +168,7 @@ const MyDeliveriesScreen = () => {
         data={history}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.text} />
         }
         ListHeaderComponent={() => (
           <>
@@ -174,7 +176,7 @@ const MyDeliveriesScreen = () => {
             {activeOrder ? (
               <View style={[styles.activeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={styles.activeHeader}>
-                  <Text style={[styles.activeLabel, { color: colors.primary }]}>ACTIVE DELIVERY</Text>
+                  <Text style={[styles.activeLabel, { color: colors.text }]}>ACTIVE DELIVERY</Text>
                   <Text style={[styles.orderNumber, { color: colors.textSecondary }]}>
                     #{activeOrder.orderNumber}
                   </Text>
@@ -201,18 +203,18 @@ const MyDeliveriesScreen = () => {
                           style={[
                             styles.stepDot,
                             {
-                              backgroundColor: isCompleted ? colors.primary : colors.border,
-                              borderColor: isCurrent ? colors.primary : 'transparent',
-                              borderWidth: isCurrent ? 2 : 0,
+                              backgroundColor: isCompleted ? (isDarkMode ? '#FFF' : '#111') : 'transparent',
+                              borderColor: isCurrent ? (isDarkMode ? '#FFF' : '#111') : colors.border,
+                              borderWidth: isCurrent || !isCompleted ? 2 : 0,
                             },
                           ]}
                         >
-                          <Icon size={14} color={isCompleted ? '#FFF' : colors.textSecondary} />
+                          <Icon size={14} color={isCompleted ? (isDarkMode ? '#111' : '#FFF') : colors.textSecondary} />
                         </View>
                         <Text
                           style={[
                             styles.stepLabel,
-                            { color: isCompleted ? colors.primary : colors.textSecondary },
+                            { color: isCompleted ? colors.text : colors.textSecondary },
                           ]}
                         >
                           {step.label}
@@ -221,7 +223,7 @@ const MyDeliveriesScreen = () => {
                           <View
                             style={[
                               styles.stepLine,
-                              { backgroundColor: idx < currentIdx ? colors.primary : colors.border },
+                              { backgroundColor: idx < currentIdx ? (isDarkMode ? '#FFF' : '#111') : colors.border },
                             ]}
                           />
                         )}
@@ -233,7 +235,7 @@ const MyDeliveriesScreen = () => {
                 {/* Payout */}
                 <View style={[styles.payoutRow, { borderTopColor: colors.border }]}>
                   <Text style={[styles.payoutLabel, { color: colors.textSecondary }]}>Payout</Text>
-                  <Text style={[styles.payoutValue, { color: colors.success }]}>
+                  <Text style={[styles.payoutValue, { color: isDarkMode ? '#FFF' : '#111' }]}>
                     ₹{activeOrder.totalPayout}
                   </Text>
                 </View>
@@ -245,17 +247,17 @@ const MyDeliveriesScreen = () => {
                       style={[styles.cancelBtn, { borderColor: colors.border }]}
                       onPress={handleCancelOrder}
                     >
-                      <Text style={[styles.cancelText, { color: '#EA4335' }]}>Cancel</Text>
+                      <Text style={[styles.cancelText, { color: colors.text }]}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.nextBtn, { backgroundColor: colors.primary }]}
+                      style={[styles.nextBtn, { backgroundColor: isDarkMode ? '#FFF' : '#111' }]}
                       onPress={handleUpdateStatus}
                       disabled={updating}
                     >
                       {updating ? (
-                        <ActivityIndicator color="#FFF" size="small" />
+                        <ActivityIndicator color={isDarkMode ? '#111' : '#FFF'} size="small" />
                       ) : (
-                        <Text style={styles.nextBtnText}>
+                        <Text style={[styles.nextBtnText, { color: isDarkMode ? '#111' : '#FFF' }]}>
                           {NEXT_STATUS[activeOrder.status] === 'delivered'
                             ? 'Verify & Deliver'
                             : `Mark: ${STATUS_STEPS.find((s) => s.key === NEXT_STATUS[activeOrder.status])?.label}`}
@@ -292,17 +294,17 @@ const MyDeliveriesScreen = () => {
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[styles.historyPayout, { color: colors.success }]}>₹{item.totalPayout}</Text>
+                <Text style={[styles.historyPayout, { color: isDarkMode ? '#FFF' : '#111' }]}>₹{item.totalPayout}</Text>
                 <View
                   style={[
                     styles.statusBadge,
-                    { backgroundColor: item.status === 'delivered' ? colors.success + '20' : '#EA4335' + '20' },
+                    { backgroundColor: item.status === 'delivered' ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') },
                   ]}
                 >
                   <Text
                     style={[
                       styles.statusBadgeText,
-                      { color: item.status === 'delivered' ? colors.success : '#EA4335' },
+                      { color: item.status === 'delivered' ? colors.text : colors.textSecondary },
                     ]}
                   >
                     {item.status === 'delivered' ? 'Delivered' : 'Cancelled'}
@@ -321,20 +323,20 @@ const MyDeliveriesScreen = () => {
             </View>
           ) : null
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingBottom: 40 }}
       />
 
       {/* OTP Verification Modal */}
       <Modal visible={showOtpModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <View style={styles.modalHeader}>
+            <View style={{ alignItems: "center", marginBottom: 10 }}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Verify Delivery</Text>
               <TouchableOpacity onPress={() => setShowOtpModal(false)}>
                 <X size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+            <Text style={[styles.modalDesc, { color: colors.textSecondary }]}>
               Enter the 4-digit OTP provided by the customer
             </Text>
             <TextInput
@@ -348,14 +350,14 @@ const MyDeliveriesScreen = () => {
               autoFocus
             />
             <TouchableOpacity
-              style={[styles.verifyBtn, { backgroundColor: colors.primary }]}
+              style={[styles.verifyBtn, { backgroundColor: isDarkMode ? '#FFF' : '#111' }]}
               onPress={handleVerifyDelivery}
               disabled={updating}
             >
               {updating ? (
-                <ActivityIndicator color="#FFF" size="small" />
+                <ActivityIndicator color={isDarkMode ? '#111' : '#FFF'} size="small" />
               ) : (
-                <Text style={styles.verifyBtnText}>Complete Delivery</Text>
+                <Text style={[styles.verifyBtnText, { color: isDarkMode ? '#111' : '#FFF' }]}>Complete Delivery</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -367,82 +369,163 @@ const MyDeliveriesScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 20, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 },
-  listContent: { padding: 16 },
-
-  // Active Order Card
-  activeCard: { borderRadius: 16, padding: 18, borderWidth: 1, marginBottom: 20 },
-  activeHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  activeLabel: { fontSize: 12, fontWeight: 'bold', letterSpacing: 1 },
-  orderNumber: { fontSize: 12 },
-  pharmacyName: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
-  dropoffText: { fontSize: 14, marginBottom: 16 },
-
-  // Stepper
-  stepper: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  stepItem: { alignItems: 'center', flex: 1, position: 'relative' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: {
+    padding: 20,
+    paddingTop: 10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+  activeCard: {
+    margin: 20,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  activeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  activeLabel: { fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  orderNumber: { fontSize: 14, fontWeight: 'bold' },
+  pharmacyName: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  dropoffText: { fontSize: 15, lineHeight: 22, marginBottom: 20 },
+  stepper: { marginVertical: 10 },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    position: 'relative',
+  },
   stepDot: {
-    width: 30, height: 30, borderRadius: 15,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+    borderWidth: 1,
   },
-  stepLabel: { fontSize: 9, fontWeight: '600', textAlign: 'center' },
+  stepLabel: { marginLeft: 16, fontSize: 16, fontWeight: 'bold' },
   stepLine: {
-    position: 'absolute', top: 15, left: '60%', right: '-40%', height: 2,
+    position: 'absolute',    
+    left: 13,
+    top: 28,
+    bottom: -24,
+    width: 2,
+    zIndex: 1,
   },
-
-  // Payout
   payoutRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    borderTopWidth: 1, paddingTop: 12, marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 16,
+    marginTop: 10,
+    borderTopWidth: 1,
   },
-  payoutLabel: { fontSize: 14 },
-  payoutValue: { fontSize: 22, fontWeight: 'bold' },
-
-  // Action Buttons
-  actionRow: { flexDirection: 'row', gap: 12 },
+  payoutLabel: { fontSize: 16, fontWeight: 'bold' },
+  payoutValue: { fontSize: 24, fontWeight: '900' },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
   cancelBtn: {
-    flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
+    flex: 1,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    marginRight: 10,
+  },
+  cancelText: { fontWeight: 'bold', fontSize: 16 },
+  nextBtn: {
+    flex: 2,
+    padding: 16,
+    borderRadius: 16,
     alignItems: 'center',
   },
-  cancelText: { fontSize: 14, fontWeight: '600' },
-  nextBtn: { flex: 2, paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
-  nextBtnText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
-
-  // No Active
-  noActiveContainer: { alignItems: 'center', paddingVertical: 30 },
-  noActiveText: { fontSize: 15, marginTop: 8 },
-
-  // History
-  historyTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12, marginTop: 4 },
-  historyCard: { borderRadius: 12, padding: 14, borderWidth: 1, marginBottom: 10 },
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  historyPharmacy: { fontSize: 15, fontWeight: '600', marginBottom: 2 },
-  historyDropoff: { fontSize: 13 },
-  historyPayout: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  statusBadgeText: { fontSize: 11, fontWeight: '600' },
-
-  // Modal
+  nextBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 20,
+    marginTop: 10,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  historyCard: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    backgroundColor: 'transparent',
+  },
+  historyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyPharmacy: { fontSize: 17, fontWeight: 'bold', marginBottom: 4 },
+  historyDropoff: { fontSize: 14 },
+  historyPayout: { fontSize: 18, fontWeight: '900', textAlign: 'right', marginBottom: 4 },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusBadgeText: { fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase' },
+  noActiveContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noActiveText: { marginTop: 16, fontSize: 16, fontWeight: '500' },
   modalOverlay: {
-    flex: 1, justifyContent: 'flex-end',
+    flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 8,
+  modalContent: {
+    width: '85%',
+    padding: 24,
+    borderRadius: 24,
+    alignItems: 'center',
   },
-  modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  modalSubtitle: { fontSize: 14, marginBottom: 20 },
+  modalClose: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
+  modalDesc: { fontSize: 14, textAlign: 'center', marginBottom: 20 },
   otpInput: {
-    height: 56, borderRadius: 14, borderWidth: 1.5,
-    paddingHorizontal: 16, fontSize: 24, fontWeight: 'bold',
-    textAlign: 'center', letterSpacing: 8, marginBottom: 20,
+    width: '100%',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    fontSize: 20,
+    textAlign: 'center',
+    letterSpacing: 8,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  verifyBtn: { height: 52, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  verifyBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  verifyBtn: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  verifyBtnText: { fontWeight: 'bold', fontSize: 16 },
 });
 
 export default MyDeliveriesScreen;
+
+

@@ -107,7 +107,7 @@ const VerifyOtpScreen = ({ route, navigation }: any) => {
         {/* Header */}
         <View style={styles.headerSection}>
           <View style={[styles.iconCircle, { backgroundColor: colors.success + '20' }]}>
-            <ShieldCheck size={40} color={colors.success} />
+            <ShieldCheck size={40} color={colors.text} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Verify Phone</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>

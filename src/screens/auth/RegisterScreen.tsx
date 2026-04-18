@@ -66,7 +66,7 @@ const RegisterScreen = () => {
         {/* Header */}
         <View style={styles.headerSection}>
           <View style={[styles.iconCircle, { backgroundColor: colors.primary + '20' }]}>
-            <UserCheck size={40} color={colors.primary} />
+            <UserCheck size={40} color={colors.text} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Complete Profile</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -118,10 +118,7 @@ const RegisterScreen = () => {
                 onPress={() => setVehicleType(key)}
                 activeOpacity={0.7}
               >
-                <Icon
-                  size={24}
-                  color={vehicleType === key ? colors.primary : colors.textSecondary}
-                />
+                <Icon size={24} color={colors.text} />
                 <Text
                   style={[
                     styles.vehicleLabel,

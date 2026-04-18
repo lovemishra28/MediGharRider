@@ -35,7 +35,7 @@ const OrderCard = ({ order }: { order: any }) => {
     >
       <View style={styles.topRow}>
         <View style={styles.pharmacyBadge}>
-          <Building2 size={24} color={colors.primary} />
+          <Building2 size={24} color={colors.text} />
         </View>
         <View style={styles.pharmacyInfo}>
           <Text style={[styles.pharmacyName, { color: colors.text }]} numberOfLines={1}>
@@ -43,17 +43,17 @@ const OrderCard = ({ order }: { order: any }) => {
           </Text>
           <Text style={[styles.dropoff, { color: colors.textSecondary }]}>Dropoff: {dropoff}</Text>
         </View>
-        <Text style={[styles.distance, { color: colors.primary }]}>{distance} km</Text>
+        <Text style={[styles.distance, { color: colors.text }]}>{distance} km</Text>
       </View>
 
       <View style={[styles.bottomRow, { borderTopColor: colors.border }]}>
         <View>
           <Text style={[styles.payoutLabel, { color: colors.textSecondary }]}>Est. Payout</Text>
-          <Text style={[styles.payout, { color: colors.success }]}>₹{payout}</Text>
+          <Text style={[styles.payout, { color: colors.text }]}>₹{payout}</Text>
         </View>
 
-        <View style={[styles.acceptBadge, { backgroundColor: colors.primary }]}>
-          <Text style={styles.acceptText}>Review Order</Text>
+        <View style={[styles.acceptBadge, { backgroundColor: isDarkMode ? '#FFF' : '#111' }]}>
+          <Text style={[styles.acceptText, { color: isDarkMode ? '#000' : '#FFF' }]}>Review Order</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(45, 136, 255, 0.1)',
+    backgroundColor: 'rgba(128, 128, 128, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

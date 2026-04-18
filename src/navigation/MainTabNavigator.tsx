@@ -24,7 +24,7 @@ const MainTabNavigator = () => {
           paddingTop: 5,
           height: 60,
         },
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.text,
         tabBarInactiveTintColor: colors.textSecondary,
       }}
     >

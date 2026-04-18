@@ -1,43 +1,33 @@
-import { getCustomServerIp } from '../services/storage';
+import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
-// ─── API Configuration ───────────────────────────────────
-// ⚠️ PASTE YOUR RENDER URL SECURELY HERE (Do not add a slash '/' at the end)
 const PRODUCTION_URL = 'https://medigharrider-api.onrender.com';
 
-export const getBaseUrl = async () => {
-  // In release APK, always use deployed server to avoid stale local IP issues.
-  if (!__DEV__) {
-    return `${PRODUCTION_URL}/api`;
-  }
+export const getBaseUrl = async () => `${PRODUCTION_URL}/api`;
+export const getSocketUrl = async () => PRODUCTION_URL;
 
-  try {
-    let customIp = await getCustomServerIp();
-    if (customIp) {
-      customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
-      return `http://${customIp}:5000/api`;
+const api = axios.create({
+  timeout: 10000,
+});
+
+api.interceptors.request.use(
+  async (config) => {
+    config.baseURL = await getBaseUrl();
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  } catch (error) {
-    // Ignore error
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // Handle auth errors (e.g., token expired)
+    return Promise.reject(error);
   }
+);
 
-  return `${PRODUCTION_URL}/api`;
-};
-
-export const getSocketUrl = async () => {
-  // In release APK, always use deployed server to avoid stale local IP issues.
-  if (!__DEV__) {
-    return PRODUCTION_URL;
-  }
-
-  try {
-    let customIp = await getCustomServerIp();
-    if (customIp) {
-      customIp = customIp.replace('http://', '').replace('https://', '').split(':')[0];
-      return `http://${customIp}:5000`;
-    }
-  } catch (error) {
-    // Ignore error
-  }
-
-  return PRODUCTION_URL;
-};
+export default api;

@@ -16,7 +16,7 @@ import api from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
 
 const WalletScreen = () => {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const [walletData, setWalletData] = useState<any>(null);
   const [earnings, setEarnings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,7 @@ const WalletScreen = () => {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.text} />
         </View>
       </SafeAreaView>
     );
@@ -99,116 +99,91 @@ const WalletScreen = () => {
         data={transactions}
         keyExtractor={(_, idx) => idx.toString()}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.text} />
         }
         ListHeaderComponent={() => (
           <>
-            {/* Balance Card */}
-            <View style={[styles.balanceCard, { backgroundColor: colors.primary }]}>
+            {/* Minimal Balance Card */}
+            <View style={[styles.balanceCard, { borderColor: colors.border, backgroundColor: 'transparent' }]}>
               <View style={styles.balanceRow}>
                 <View>
-                  <Text style={styles.balanceLabel}>Available Balance</Text>
-                  <Text style={styles.balanceAmount}>₹{walletData?.balance || 0}</Text>
+                  <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>AVAILABLE BALANCE</Text>
+                  <Text style={[styles.balanceAmount, { color: colors.text }]}>₹{walletData?.balance || 0}</Text>
                 </View>
-                <Wallet size={36} color="rgba(255,255,255,0.6)" />
+                <Wallet size={36} color={colors.textSecondary} />
               </View>
               <TouchableOpacity
-                style={styles.payoutBtn}
+                style={[styles.payoutBtn, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }]}
                 onPress={handleRequestPayout}
                 activeOpacity={0.8}
               >
-                <CreditCard size={16} color={colors.primary} />
-                <Text style={[styles.payoutBtnText, { color: colors.primary }]}>Request Payout</Text>
+                <CreditCard size={18} color={colors.text} style={{ marginRight: 8 }} />
+                <Text style={[styles.payoutBtnText, { color: colors.text }]}>Request Payout</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Earnings Cards */}
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Earnings</Text>
+            {/* Earnings Section Minimal */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>EARNINGS</Text>
             <View style={styles.earningsRow}>
-              <View style={[styles.earningCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.earningCard, { borderColor: colors.border }]}>
                 <Text style={[styles.earningLabel, { color: colors.textSecondary }]}>Today</Text>
-                <Text style={[styles.earningValue, { color: colors.success }]}>
+                <Text style={[styles.earningValue, { color: colors.text }]}>
                   ₹{earnings?.today || 0}
                 </Text>
               </View>
-              <View style={[styles.earningCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.earningCard, { borderColor: colors.border }]}>
                 <Text style={[styles.earningLabel, { color: colors.textSecondary }]}>This Week</Text>
-                <Text style={[styles.earningValue, { color: colors.success }]}>
-                  ₹{earnings?.thisWeek || 0}
+                <Text style={[styles.earningValue, { color: colors.text }]}>
+                  ₹{earnings?.week || 0}
                 </Text>
               </View>
-              <View style={[styles.earningCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Text style={[styles.earningLabel, { color: colors.textSecondary }]}>This Month</Text>
-                <Text style={[styles.earningValue, { color: colors.success }]}>
-                  ₹{earnings?.thisMonth || 0}
-                </Text>
-              </View>
-            </View>
-
-            {/* Total Earnings */}
-            <View style={[styles.totalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.totalRow}>
-                <TrendingUp size={20} color={colors.success} />
-                <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>  Total Earnings</Text>
-              </View>
-              <Text style={[styles.totalValue, { color: colors.text }]}>
-                ₹{earnings?.totalEarnings || walletData?.totalEarnings || 0}
-              </Text>
             </View>
 
             {/* Transactions Header */}
-            {transactions.length > 0 && (
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Transactions</Text>
-            )}
+            <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 30 }]}>RECENT TRANSACTIONS</Text>
           </>
         )}
-        renderItem={({ item }) => {
-          const isCredit = item.type === 'credit';
-          const isPayout = item.type === 'payout';
-
-          return (
-            <View style={[styles.txCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.txRow}>
-                <View style={[styles.txIcon, { backgroundColor: (isCredit ? colors.success : '#EA4335') + '15' }]}>
-                  {isCredit ? (
-                    <ArrowDownCircle size={20} color={colors.success} />
-                  ) : (
-                    <ArrowUpCircle size={20} color="#EA4335" />
-                  )}
-                </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.txDesc, { color: colors.text }]} numberOfLines={1}>
-                    {item.description}
-                  </Text>
-                  <Text style={[styles.txDate, { color: colors.textSecondary }]}>
-                    {new Date(item.timestamp).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-                <Text
-                  style={[
-                    styles.txAmount,
-                    { color: isCredit ? colors.success : '#EA4335' },
-                  ]}
-                >
-                  {isCredit ? '+' : '-'}₹{item.amount}
-                </Text>
-              </View>
+        renderItem={({ item }) => (
+          <View style={[styles.txCard, { borderBottomColor: colors.border }]}>
+            <View style={styles.txIconContainer}>
+              {item.type === 'payout' ? (
+                <ArrowUpCircle size={24} color={colors.textSecondary} />
+              ) : (
+                <TrendingUp size={24} color={colors.textSecondary} />
+              )}
             </View>
-          );
-        }}
-        ListEmptyComponent={
-          <View style={styles.emptyCentered}>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No transactions yet.
-            </Text>
+            <View style={styles.txDetails}>
+              <Text style={[styles.txRef, { color: colors.text }]}>
+                {item.type === 'payout' ? 'Bank Payout' : 'Order Payout'}
+              </Text>
+              <Text style={[styles.txOrder, { color: colors.textSecondary }]}>
+                {item.orderNumber ? `Order #${item.orderNumber}` : item.referenceId}
+              </Text>
+            </View>
+            <View style={styles.txRight}>
+              <Text
+                style={[
+                  styles.txAmount,
+                  { color: colors.text },
+                ]}
+              >
+                {item.type === 'payout' ? '-' : '+'}₹{item.amount}
+              </Text>
+              <Text style={[styles.txDate, { color: colors.textSecondary }]}>
+                {new Date(item.createdAt).toLocaleDateString([], {
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </Text>
+            </View>
           </View>
-        }
-        contentContainerStyle={styles.listContent}
+        )}
+        ListEmptyComponent={() => (
+          <View style={styles.centered}>
+            <Text style={{ color: colors.textSecondary, marginTop: 20 }}>No transactions yet.</Text>
+          </View>
+        )}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       />
     </SafeAreaView>
   );
@@ -216,54 +191,78 @@ const WalletScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 20, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { padding: 16, paddingBottom: 40 },
-
-  // Balance
+  header: {
+    padding: 20,
+    paddingTop: 10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
   balanceCard: {
-    borderRadius: 18, padding: 22, marginBottom: 20,
+    padding: 24,
+    borderRadius: 28,
+    marginBottom: 24,
+    borderWidth: 1,
   },
-  balanceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  balanceLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 4 },
-  balanceAmount: { color: '#FFF', fontSize: 36, fontWeight: 'bold' },
+  balanceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  balanceLabel: { fontSize: 14, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
+  balanceAmount: { fontSize: 40, fontWeight: '900' },
   payoutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#FFF', paddingVertical: 10, paddingHorizontal: 16,
-    borderRadius: 10, alignSelf: 'flex-start', marginTop: 16,
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  payoutBtnText: { fontSize: 14, fontWeight: 'bold' },
-
-  // Earnings
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
-  earningsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  payoutBtnText: { fontWeight: 'bold', fontSize: 16 },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  earningsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   earningCard: {
-    flex: 1, alignItems: 'center', paddingVertical: 14,
-    borderRadius: 14, borderWidth: 1,
+    flex: 1,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginRight: 10,
+    backgroundColor: 'transparent',
   },
-  earningLabel: { fontSize: 12, marginBottom: 4 },
-  earningValue: { fontSize: 18, fontWeight: 'bold' },
-
-  // Total
-  totalCard: {
-    borderRadius: 14, padding: 16, borderWidth: 1, marginBottom: 20,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  earningLabel: { fontSize: 14, marginBottom: 8, fontWeight: '600' },
+  earningValue: { fontSize: 24, fontWeight: '900' },
+  txCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
-  totalRow: { flexDirection: 'row', alignItems: 'center' },
-  totalLabel: { fontSize: 14 },
-  totalValue: { fontSize: 20, fontWeight: 'bold' },
-
-  // Transactions
-  txCard: { borderRadius: 12, padding: 14, borderWidth: 1, marginBottom: 8 },
-  txRow: { flexDirection: 'row', alignItems: 'center' },
-  txIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  txDesc: { fontSize: 14, fontWeight: '500', marginBottom: 2 },
-  txDate: { fontSize: 12 },
-  txAmount: { fontSize: 16, fontWeight: 'bold' },
-
-  emptyCentered: { alignItems: 'center', paddingTop: 30 },
-  emptyText: { fontSize: 15 },
+  txIconContainer: {
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+    marginRight: 16,
+  },
+  txDetails: { flex: 1 },
+  txRef: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  txOrder: { fontSize: 13 },
+  txRight: { alignItems: 'flex-end' },
+  txAmount: { fontSize: 16, fontWeight: '900', marginBottom: 4 },
+  txDate: { fontSize: 12, fontWeight: '500' },
 });
 
 export default WalletScreen;
+
+

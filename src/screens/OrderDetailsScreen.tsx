@@ -7,7 +7,7 @@ import api from '../services/api';
 
 const OrderDetailsScreen = ({ route, navigation }: any) => {
   const { order } = route.params;
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(false);
 
   // Support both API and legacy field names
@@ -24,21 +24,22 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
     setLoading(true);
     try {
       await api.post(`/orders/${orderId}/accept`);
-      Alert.alert(
-        '✅ Order Accepted!',
-        `Navigate to ${pharmacy} for pickup.`,
-        [{
-          text: 'Go to My Deliveries',
-          onPress: () => {
-            navigation.goBack();
-            // Navigate to the Deliveries tab
-            navigation.navigate('MainTabs', { screen: 'DeliveriesTab' });
-          },
-        }],
-      );
+      setTimeout(() => {
+        Alert.alert(
+          '✅ Order Accepted',
+          `Navigate to ${pharmacy} for pickup.`,
+          [{
+            text: 'Go to My Deliveries',
+            onPress: () => {
+              navigation.goBack();
+              navigation.navigate('MainTabs', { screen: 'DeliveriesTab' });
+            },
+          }],
+        );
+      }, 100);
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Failed to accept order. Try again.';
-      Alert.alert('Error', msg);
+      setTimeout(() => Alert.alert('Error', msg), 100);
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={22} color={colors.primary} />
+          <ArrowLeft size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Order Details</Text>
         <View style={{ width: 40 }} />
@@ -63,7 +64,7 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
 
           <View style={styles.detailRow}>
             <View style={styles.detailIcon}>
-              <MapPin size={16} color={colors.primary} />
+              <MapPin size={16} color={colors.text} />
             </View>
             <View style={styles.detailContent}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Pickup</Text>
@@ -73,7 +74,7 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
 
           <View style={styles.detailRow}>
             <View style={styles.detailIcon}>
-              <Navigation size={16} color={colors.success} />
+              <Navigation size={16} color={colors.text} />
             </View>
             <View style={styles.detailContent}>
               <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Dropoff</Text>
@@ -83,12 +84,12 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
 
           <View style={[styles.statsRow, { borderTopColor: colors.border }]}>
             <View style={styles.stat}>
-              <Navigation size={14} color={colors.primary} />
+              <Navigation size={14} color={colors.text} />
               <Text style={[styles.statValue, { color: colors.text }]}>{distance} km</Text>
             </View>
             {estimatedTime && (
               <View style={styles.stat}>
-                <Clock size={14} color={colors.primary} />
+                <Clock size={14} color={colors.text} />
                 <Text style={[styles.statValue, { color: colors.text }]}>{estimatedTime} min</Text>
               </View>
             )}
@@ -99,7 +100,7 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
         {items.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.itemsHeader}>
-              <Package size={18} color={colors.primary} />
+              <Package size={18} color={colors.text} />
               <Text style={[styles.itemsTitle, { color: colors.text }]}>  Items ({items.length})</Text>
             </View>
             {items.map((item: any, idx: number) => (
@@ -114,22 +115,22 @@ const OrderDetailsScreen = ({ route, navigation }: any) => {
         {/* Payout */}
         <View style={styles.payoutContainer}>
           <Text style={[styles.payoutLabel, { color: colors.textSecondary }]}>Estimated Payout</Text>
-          <Text style={[styles.payoutAmount, { color: colors.success }]}>₹{payout}</Text>
+          <Text style={[styles.payoutAmount, { color: isDarkMode ? '#FFF' : '#111' }]}>₹{payout}</Text>
         </View>
       </View>
 
       {/* Accept Button */}
       <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
         <TouchableOpacity
-          style={[styles.acceptButton, { backgroundColor: colors.primary }]}
+          style={[styles.acceptButton, { backgroundColor: isDarkMode ? '#FFF' : '#111' }]}
           onPress={handleAcceptOrder}
           disabled={loading}
           activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color="#FFF" size="small" />
+            <ActivityIndicator color={isDarkMode ? '#111' : '#FFF'} size="small" />
           ) : (
-            <Text style={styles.acceptButtonText}>Accept Order</Text>
+            <Text style={[styles.acceptButtonText, { color: isDarkMode ? '#111' : '#FFF' }]}>Accept Order</Text>
           )}
         </TouchableOpacity>
       </View>

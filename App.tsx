@@ -9,24 +9,31 @@ import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useAuthStore } from './src/store/authStore';
 import { connectSocket } from './src/services/socket';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import SplashScreen from './src/screens/SplashScreen';
+import { useState } from 'react';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigation = () => {
   const { isDarkMode, colors } = useTheme();
   const { isAuthenticated, isLoading, accessToken, rider, hydrate } = useAuthStore();
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
 
   // Hydrate auth state from AsyncStorage on app start
   useEffect(() => {
     hydrate();
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 3500);
+    return () => clearTimeout(timer);
   }, []);
 
   // Reconnect socket when app starts and user is authenticated
   useEffect(() => {
-    if (isAuthenticated && accessToken) {
+    if (!isSplashVisible && isAuthenticated && accessToken) {
       connectSocket(accessToken);
     }
-  }, [isAuthenticated, accessToken]);
+  }, [isSplashVisible, isAuthenticated, accessToken]);
 
   const NavigationTheme = {
     ...(isDarkMode ? DarkTheme : DefaultTheme),
@@ -41,12 +48,8 @@ const AppNavigation = () => {
   };
 
   // Show splash screen during hydration
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+  if (isLoading || isSplashVisible) {
+    return <SplashScreen />;
   }
 
   // Determine if rider profile is complete (has name)

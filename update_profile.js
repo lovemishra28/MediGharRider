@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+const fs = require('fs');
+const content = `import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, ActivityIndicator, Alert, ScrollView, RefreshControl, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -76,11 +77,8 @@ const ProfileScreen = () => {
 
   const GlassCard = ({ children, style }: any) => (
     <View style={[styles.glassCard, {
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.5)',
-      borderWidth: 0,
-      borderColor: 'transparent',
-      elevation: 0,
-      shadowOpacity: 0,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.7)',
+      borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.4)',
     }, style]}>
       {children}
     </View>
@@ -92,10 +90,10 @@ const ProfileScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <View style={styles.headerGlass}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>My Profile</Text>
           {!isEditing ? (
             <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editBtn}>
-              <Edit3 size={20} color={colors.text} />
+              <Edit3 size={20} color={colors.primary} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={() => setIsEditing(false)} style={styles.editBtn}>
@@ -110,31 +108,19 @@ const ProfileScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           {/* Profile Avatar Glassmorphism */} 
-          <GlassCard style={[styles.profileSection, {
-            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
-          }]}
-          >
-            <View style={[styles.avatarPlaceholder, {
-              backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 1)',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2,
-            }]}> 
-              <Text style={[styles.avatarText, { color: colors.text }]}>{initial}</Text>
+          <GlassCard style={styles.profileSection}>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary + '30', borderColor: colors.primary }]}>
+              <Text style={[styles.avatarText, { color: colors.primary }]}>{initial}</Text>
             </View>
-            <View style={styles.profileDetails}>
-              <Text style={[styles.name, { color: colors.text }]}>{rider?.name || 'Rider'}</Text>
-              <Text style={[styles.phone, { color: colors.textSecondary }]}>{rider?.phone || ''}</Text>
-            </View>
+            <Text style={[styles.name, { color: colors.text }]}>{rider?.name || 'Rider'}</Text>
+            <Text style={[styles.phone, { color: colors.textSecondary }]}>{rider?.phone || ''}</Text>
           </GlassCard>
 
           {/* Edit Form or Display */}
-          <GlassCard style={[styles.section, { backgroundColor: 'transparent' }]}>          
-            {/* <Text style={[styles.sectionTitle, { color: colors.text }]}>Personal Details</Text> */}
+          <GlassCard style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Personal Details</Text>
 
-            <View style={[styles.inputGroup, { borderColor: isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)'}]}>
+            <View style={styles.inputGroup}>
               <User size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <View style={styles.inputWrapper}>
                 <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Full Name</Text>
@@ -146,7 +132,7 @@ const ProfileScreen = () => {
               </View>
             </View>
 
-            <View style={[styles.inputGroup, { borderColor: isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)' }]}>
+            <View style={styles.inputGroup}>
               <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <View style={styles.inputWrapper}>
                 <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Email Address</Text>
@@ -158,7 +144,7 @@ const ProfileScreen = () => {
               </View>
             </View>
 
-            <View style={[styles.inputGroup, { borderColor: isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)' }]}>
+            <View style={styles.inputGroup}>
               <Bike size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <View style={styles.inputWrapper}>
                 <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Vehicle Type</Text>
@@ -170,7 +156,7 @@ const ProfileScreen = () => {
               </View>
             </View>
 
-            <View style={[styles.inputGroup, { borderColor: isDarkMode ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)' }]}>
+            <View style={styles.inputGroup}>
               <Hash size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <View style={styles.inputWrapper}>
                 <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Vehicle Number</Text>
@@ -183,53 +169,37 @@ const ProfileScreen = () => {
             </View>
 
             {isEditing && (
-              <TouchableOpacity
-                style={[
-                  styles.saveBtn,
-                  { backgroundColor: isDarkMode ? '#FFF' : '#111' },
-                ]}
-                onPress={handleSave}
-                disabled={saving}
-              >
-                {saving ? (
-                  <ActivityIndicator color={isDarkMode ? '#111' : '#FFF'} />
-                ) : (
+              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={handleSave} disabled={saving}>
+                {saving ? <ActivityIndicator color="#FFF" /> : (
                   <>
-                    <Check size={20} color={isDarkMode ? '#111' : '#FFF'} style={{ marginRight: 8 }} />
-                    <Text style={[styles.saveBtnText, { color: isDarkMode ? '#111' : '#FFF' }]}>Save Changes</Text>
+                    <Check size={20} color="#FFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.saveBtnText}>Save Changes</Text>
                   </>
                 )}
               </TouchableOpacity>
             )}
           </GlassCard>
 
-          {/* <Text style={[styles.sectionHeading, { color: colors.textSecondary }]}>Preferences</Text> */}
-
-          <View style={styles.preferencesRow}>
-            <TouchableOpacity
-              style={[styles.preferenceBlock, styles.preferenceHalf, { marginRight: 12, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.92)' : 'rgba(17,24,39,0.9)' }]}
-              activeOpacity={0.85}
-              onPress={toggleTheme}
-            >
-              <View style={styles.preferenceLeft}>
-                {isDarkMode ? <Moon size={24} color={isDarkMode ? '#111' : '#FFF'} /> : <Sun size={24} color={isDarkMode ? '#111' : '#FFF'} />}
-                <Text style={[styles.preferenceTitle, { color: isDarkMode ? '#111' : '#FFF' }]}>{isDarkMode ? 'Light' : 'Dark'}</Text>
+          {/* Settings section */}
+          <Text style={[styles.sectionHeading, { color: colors.textSecondary }]}>Preferences</Text>
+          <GlassCard style={styles.section2}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                {isDarkMode ? <Moon size={24} color={colors.primary} /> : <Sun size={24} color={colors.primary} />}
+                <Text style={[styles.settingText, { color: colors.text }]}>Dark Theme</Text>
               </View>
-              <View style={[styles.preferenceAccent, { backgroundColor: isDarkMode ? '#111' : '#FFF' }]} />
-            </TouchableOpacity>
+              <Switch trackColor={{ false: '#767577', true: colors.primary }} thumbColor={isDarkMode ? '#FFF' : '#f4f3f4'} onValueChange={toggleTheme} value={isDarkMode} />
+            </View>
+            
+            <View style={[styles.divider, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]} />
 
-            <TouchableOpacity
-              style={[styles.preferenceBlock, styles.preferenceHalf, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}
-              activeOpacity={0.85}
-              onPress={handleLogout}
-            >
-              <View style={styles.preferenceLeft}>
-                <LogOut size={24} color={colors.text} />
-                <Text style={styles.logoutTitle}>Log out</Text>
+            <TouchableOpacity style={styles.settingRow} onPress={handleLogout}>
+              <View style={styles.settingLeft}>
+                <LogOut size={24} color="#EA4335" />
+                <Text style={[styles.settingText, { color: '#EA4335' }]}>Logout</Text>
               </View>
-              <View style={styles.logoutAccent} />
             </TouchableOpacity>
-          </View>
+          </GlassCard>
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -252,90 +222,35 @@ const styles = StyleSheet.create({
   editBtn: { padding: 8 },
   scrollContent: { padding: 20, paddingBottom: 40 },
   glassCard: {
-    borderRadius: 28,
+    borderRadius: 20,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'transparent',
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
   },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-  },
-  profileDetails: {
-    flex: 1,
-    marginLeft: 16,
-  },
+  profileSection: { alignItems: 'center' },
   avatarPlaceholder: {
-    width: 76, height: 76, borderRadius: 22,
+    width: 90, height: 90, borderRadius: 45,
     justifyContent: 'center', alignItems: 'center',
-    marginBottom: 0, borderWidth: 0,
+    marginBottom: 16, borderWidth: 2,
   },
-  avatarText: { fontSize: 32, fontWeight: 'bold' },
-  name: { fontSize: 22, fontWeight: 'bold', marginBottom: 6 },
-  phone: { fontSize: 15 },
+  avatarText: { fontSize: 36, fontWeight: 'bold' },
+  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
+  phone: { fontSize: 16 },
   sectionHeading: { fontSize: 14, fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 12, marginLeft: 8, letterSpacing: 1 },
-  section: { paddingTop: 24, backgroundColor: 'transparent', paddingHorizontal: 0 },
+  section: { paddingTop: 24 },
   section2: { paddingTop: 14 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
-  preferenceBlock: {
-    padding: 22,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-  },
-  preferenceHalf: {
-    flex: 1,
-  },
-  preferencesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  preferenceLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  preferenceTitle: {
-    marginLeft: 14,
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111',
-  },
-  preferenceAccent: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  logoutTitle: {
-    marginLeft: 14,
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#EA4335',
-  },
-  logoutAccent: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(234, 67, 53, 0.25)',
-  },
-  inputGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 18,
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
-    marginBottom: 0,
-  },
-  inputIcon: { marginRight: 16, marginTop: 0 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20 },
+  inputGroup: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  inputIcon: { marginRight: 16, marginTop: 10 },
   inputWrapper: { flex: 1 },
   inputLabel: { fontSize: 12, marginBottom: 4 },
   valueText: { fontSize: 16, fontWeight: '500', paddingVertical: 4 },
-  input: { fontSize: 16, paddingVertical: 4, borderBottomWidth: 0, fontWeight: '500' },
+  input: { fontSize: 16, paddingVertical: 4, borderBottomWidth: 1, fontWeight: '500' },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, marginTop: 10 },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
@@ -345,3 +260,5 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
+`;
+fs.writeFileSync('src/screens/ProfileScreen.tsx', content);
